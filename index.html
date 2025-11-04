@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>MasterClass • Editor (cor + posições independentes)</title>
+<title>MasterClass • Editor (alinhamento dinâmico por orientação)</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@800&family=Work+Sans:wght@300;400&display=swap" rel="stylesheet">
 <style>
   html,body{margin:0;background:#0f0f0f;color:#eee;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Work Sans',sans-serif}
-  .app{display:grid;grid-template-columns:1fr 420px;gap:20px;max-width:min(1680px,96vw);margin:20px auto}
+  .app{display:grid;grid-template-columns:1fr 430px;gap:20px;max-width:min(1680px,96vw);margin:20px auto}
   .stage{background:#1a1a1a;border-radius:14px;padding:12px;display:flex;align-items:center;justify-content:center}
   canvas{width:100%;height:auto;background:transparent;border-radius:10px}
   .panel{background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px}
@@ -29,15 +29,22 @@
     </div>
     <div class="panel">
       <div class="row">
-        <label>Cor do layout</label>
+        <label>Layout</label>
         <div class="grid2">
           <input id="bgColor" type="color" value="#f37759" />
+          <select id="orientation">
+            <option value="right" selected>Fotografia à direita (pílula arredondada à direita)</option>
+            <option value="left">Fotografia à esquerda (pílula arredondada à esquerda)</option>
+          </select>
+        </div>
+        <div class="grid2">
           <select id="mcPos">
             <option value="left">“MasterClass” canto superior esquerdo</option>
             <option value="right">“MasterClass” canto superior direito</option>
           </select>
+          <span class="muted"></span>
         </div>
-        <span class="muted">Não precisas de PNG: a forma é desenhada automaticamente. A palavra “MasterClass” fica a branco.</span>
+        <span class="muted">Sem PNG: a forma é desenhada automaticamente. “MasterClass” a branco.</span>
       </div>
 
       <div class="row">
@@ -92,8 +99,8 @@
   const canvas = document.getElementById('c');
   const ctx = canvas.getContext('2d');
 
-  // UI refs
   const bgColor = document.getElementById('bgColor');
+  const orientationSel = document.getElementById('orientation');
   const mcPos   = document.getElementById('mcPos');
 
   const photoInput = document.getElementById('photo');
@@ -117,33 +124,37 @@
   const exportBtn = document.getElementById('export');
   const statusEl  = document.getElementById('status');
 
-  // Tipografia
   const pt = v => v * (96/72);
   function recomputeType(){
     const s = canvas.height / 700;
-    NAME_PX = pt(208.11) * s;          // tamanho do título (duas linhas iguais)
-    TRACK   = pt(6) * s;               // tracking largo
-    BIO_PX  = pt(20.8) * s;            // base da bio
+    NAME_PX = pt(208.11) * s;
+    TRACK   = pt(6) * s;
+    BIO_PX  = pt(20.8) * s;
     BIO_LH  = Math.round(BIO_PX * 1.45);
   }
   let NAME_PX = pt(208.11), TRACK = pt(6), BIO_PX = pt(20.8), BIO_LH = Math.round(pt(20.8)*1.45);
   recomputeType();
 
-  // Foto
   let photo = null, photoURL = null;
 
-  // Helpers
-  function drawPill(color){
+  function drawPill(color, side){
     const W = canvas.width, H = canvas.height;
     const R = H/2;
     ctx.save();
-    // fundo transparente fora da forma
     ctx.clearRect(0,0,W,H);
     ctx.beginPath();
-    ctx.moveTo(0,0);
-    ctx.lineTo(W-R,0);
-    ctx.arc(W-R, R, R, -Math.PI/2, Math.PI/2, false);
-    ctx.lineTo(0,H);
+    if(side === 'right'){
+      ctx.moveTo(0,0);
+      ctx.lineTo(W-R,0);
+      ctx.arc(W-R, R, R, -Math.PI/2, Math.PI/2, false);
+      ctx.lineTo(0,H);
+    } else {
+      ctx.moveTo(R,0);
+      ctx.lineTo(W,0);
+      ctx.lineTo(W,H);
+      ctx.lineTo(R,H);
+      ctx.arc(R, R, R, Math.PI/2, -Math.PI/2, false);
+    }
     ctx.closePath();
     ctx.fillStyle = color;
     ctx.fill();
@@ -179,7 +190,7 @@
     ctx.font = `800 ${sizePx}px 'Barlow', sans-serif`;
     let w=0; for(const ch of (text||'')){ w += ctx.measureText(ch).width + trackingPx; } return w;
   }
-  function wrap(text, x, y, maxW, lh){
+  function wrapLeft(text, x, y, maxW, lh){
     ctx.font = `300 ${BIO_PX}px 'Work Sans', sans-serif`;
     ctx.fillStyle = '#fff'; ctx.textBaseline = 'top';
     const paras = String(text||'').split('\n');
@@ -193,20 +204,89 @@
       ctx.fillText(line, x, y); y += lh;
     }
   }
+  function wrapRight(text, rightEdge, y, maxW, lh){
+    // desenha alinhado à direita (x dinâmico por linha)
+    ctx.font = `300 ${BIO_PX}px 'Work Sans', sans-serif`;
+    ctx.fillStyle = '#fff'; ctx.textBaseline = 'top';
+    const paras = String(text||'').split('\n');
+    for(const p of paras){
+      const words = p.split(' '); let line=''; let lines=[];
+      for(let i=0;i<words.length;i++){
+        const tl = line + words[i] + ' ';
+        if(ctx.measureText(tl).width > maxW && i>0){ lines.push(line); line=words[i]+' '; }
+        else { line = tl; }
+      }
+      lines.push(line);
+      for(const L of lines){
+        const w = ctx.measureText(L).width;
+        ctx.fillText(L, rightEdge - w, y);
+        y += lh;
+      }
+    }
+  }
+
+  function margin(){ return Math.round(30 * (canvas.height/700)); }
+
   function textMaxWidth(){
+    const side = orientationSel.value;
     const cx = +cxInput.value, r = +crInput.value;
-    const rightLimit = (cx - r) - Math.round(30 * (canvas.height/700));
-    return Math.max(200, rightLimit - +titleXInput.value);
+    const m = margin();
+    if(side === 'right'){
+      return Math.max(200, (cx - r) - m - +titleXInput.value);
+    } else {
+      // quando à esquerda, a largura útil é da âncora até ao fim da pílula (canvas.width - m)
+      return Math.max(200, (canvas.width - m) - +titleXInput.value);
+    }
+  }
+
+  function bioMetrics(){
+    const side = orientationSel.value;
+    const cx = +cxInput.value, r = +crInput.value;
+    const m = margin();
+    if(side === 'right'){
+      return {maxW: Math.max(200, (cx - r) - m - +bioXInput.value), startX: +bioXInput.value, rightEdge: null};
+    } else {
+      // alinhado à direita: direita da área = canvas.width - m
+      const rightEdge = canvas.width - m;
+      const maxW = Math.max(200, rightEdge - +bioXInput.value);
+      return {maxW, startX: null, rightEdge};
+    }
+  }
+
+  function applyOrientationDefaults(){
+    const side = orientationSel.value;
+    const W = canvas.width, H = canvas.height, R = H/2;
+    if(side === 'right'){
+      cxInput.value = Math.round(W - R*0.7);
+      cyInput.value = Math.round(H*0.5);
+      crInput.value = Math.round(H*0.43);
+      titleXInput.value = Math.round(110 * (H/700));
+      titleYInput.value = Math.round(310 * (H/700));
+      bioXInput.value = titleXInput.value;
+      bioYInput.value = Math.round(560 * (H/700));
+      mcPos.value = 'left';
+    } else {
+      cxInput.value = Math.round(R*0.7);
+      cyInput.value = Math.round(H*0.5);
+      crInput.value = Math.round(H*0.43);
+      titleXInput.value = Math.round(R + 60);
+      titleYInput.value = Math.round(310 * (H/700));
+      bioXInput.value = Math.round(R + 60);
+      bioYInput.value = Math.round(560 * (H/700));
+      mcPos.value = 'right';
+    }
   }
 
   function render(){
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0,0,W,H);
+    const side = orientationSel.value;
+
     // 1) Forma base + MasterClass
-    drawPill(bgColor.value);
+    drawPill(bgColor.value, side);
     drawMasterClass();
 
-    // 2) Foto recortada (por cima da forma)
+    // 2) Foto recortada
     if(photo){
       const cx=+cxInput.value, cy=+cyInput.value, r=+crInput.value;
       const scale = +scaleInput.value, dx=+posXInput.value, dy=+posYInput.value;
@@ -218,24 +298,38 @@
       ctx.restore();
     }
 
-    // 3) Título (duas linhas) na âncora do título
+    // 3) Título (duas linhas): esquerda = normal; esquerda arredondada = alinhar à direita
     let size = NAME_PX, track = TRACK;
     const nome = (nomeInput.value||'').toUpperCase();
-    while (trackedWidth(nome, size, track) > textMaxWidth() && size > 40){
+    const maxW = textMaxWidth();
+    while (trackedWidth(nome, size, track) > maxW && size > 40){
       size -= 1; track = TRACK * (size/NAME_PX);
     }
-    const startX = +titleXInput.value, startY = +titleYInput.value;
-    drawTracked(nome, startX, startY, size, track);
-    drawTracked((sobrenomeInput.value||'').toUpperCase(), startX, startY + size*1.08, size, track);
+    const topY = +titleYInput.value;
+    if(side === 'right'){
+      const startX = +titleXInput.value;
+      drawTracked(nome, startX, topY, size, track);
+      drawTracked((sobrenomeInput.value||'').toUpperCase(), startX, topY + size*1.08, size, track);
+    } else {
+      // alinhar à direita
+      const rightEdge = canvas.width - margin();
+      const w1 = trackedWidth(nome, size, track);
+      const w2 = trackedWidth((sobrenomeInput.value||'').toUpperCase(), size, track);
+      drawTracked(nome, rightEdge - w1, topY, size, track);
+      drawTracked((sobrenomeInput.value||'').toUpperCase(), rightEdge - w2, topY + size*1.08, size, track);
+    }
 
-    // 4) Bio com X/Y independentes
-    const maxW = (cxInput.value - crInput.value) - 30 - +bioXInput.value;
-    wrap(bioInput.value, +bioXInput.value, +bioYInput.value, Math.max(200,maxW), BIO_LH);
+    // 4) Bio com alinhamento dependente
+    const bm = bioMetrics();
+    if(side === 'right'){
+      wrapLeft(bioInput.value, bm.startX, +bioYInput.value, bm.maxW, BIO_LH);
+    } else {
+      wrapRight(bioInput.value, bm.rightEdge, +bioYInput.value, bm.maxW, BIO_LH);
+    }
 
-    statusEl.textContent = `${W}×${H}`;
+    statusEl.textContent = `${W}×${H} • orientação: ${side}`;
   }
 
-  // Load photo
   photoInput.addEventListener('change', e=>{
     const f=e.target.files?.[0]; if(!f) return;
     if(photoURL) URL.revokeObjectURL(photoURL);
@@ -243,12 +337,12 @@
     const img=new Image(); img.onload=()=>{ photo=img; render(); }; img.src=photoURL;
   });
 
-  // Controls re-render
-  [bgColor, mcPos, scaleInput, posXInput, posYInput, cxInput, cyInput, crInput,
+  [bgColor, orientationSel, mcPos, scaleInput, posXInput, posYInput, cxInput, cyInput, crInput,
    nomeInput, sobrenomeInput, titleXInput, titleYInput, bioInput, bioXInput, bioYInput]
    .forEach(el=>el.addEventListener('input', render));
 
-  // Export
+  orientationSel.addEventListener('change', ()=>{ applyOrientationDefaults(); render(); });
+
   document.getElementById('export').addEventListener('click', ()=>{
     const a=document.createElement('a');
     const file=`masterclass_${(nomeInput.value+'_'+sobrenomeInput.value).toLowerCase().replace(/[^a-z0-9]+/g,'_')}.png`;
@@ -257,7 +351,7 @@
     } else { a.href=canvas.toDataURL('image/png'); a.download=file; a.click(); }
   });
 
-  // Initial render
+  applyOrientationDefaults();
   render();
 </script>
 </body>
