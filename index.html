@@ -1,44 +1,62 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MasterClass – Modelo fiel (título ancorado, 2 linhas + bio)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@800&family=Work+Sans:wght@300;400&display=swap" rel="stylesheet">
-  <style>
-    html,body{margin:0;background:#0e0e0e;color:#eee;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Work Sans',sans-serif}
-    .app{display:grid;grid-template-columns:1fr 400px;gap:20px;max-width:min(1600px,96vw);margin:20px auto}
-    .stage{background:#1c1c1c;border-radius:14px;padding:12px;display:flex;align-items:center;justify-content:center}
-    canvas{width:100%;height:auto;background:transparent;border-radius:10px}
-    .panel{background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px}
-    .row{display:flex;flex-direction:column;gap:6px}
-    label{font-size:13px;color:#bbb}
-    input[type="text"], textarea{background:#0f0f0f;border:1px solid #333;border-radius:10px;color:#f2f2f2;padding:10px 12px;font-size:14px}
-    textarea{min-height:100px;resize:vertical;white-space:pre-wrap}
-    input[type="range"]{width:100%}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    button{background:#ff6f4f;border:0;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
-    .muted{color:#9aa}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MasterClass • Editor (cor + posições independentes)</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@800&family=Work+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;background:#0f0f0f;color:#eee;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Work Sans',sans-serif}
+  .app{display:grid;grid-template-columns:1fr 420px;gap:20px;max-width:min(1680px,96vw);margin:20px auto}
+  .stage{background:#1a1a1a;border-radius:14px;padding:12px;display:flex;align-items:center;justify-content:center}
+  canvas{width:100%;height:auto;background:transparent;border-radius:10px}
+  .panel{background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px}
+  .row{display:flex;flex-direction:column;gap:6px}
+  label{font-size:13px;color:#bbb}
+  input[type="text"], textarea{background:#0f0f0f;border:1px solid #333;border-radius:10px;color:#f2f2f2;padding:10px 12px;font-size:14px}
+  textarea{min-height:80px;resize:vertical;white-space:pre-wrap}
+  input[type="range"]{width:100%}
+  select, input[type="color"]{background:#0f0f0f;border:1px solid #333;border-radius:10px;color:#f2f2f2;padding:8px 10px}
+  button{background:#ff6f4f;border:0;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .muted{color:#99a}
+</style>
 </head>
 <body>
   <div class="app">
-    <div class="stage"><canvas id="c" width="1434" height="700" aria-label="pré‑visualização"></canvas></div>
+    <div class="stage">
+      <canvas id="c" width="1434" height="700" aria-label="pré‑visualização"></canvas>
+    </div>
     <div class="panel">
       <div class="row">
-        <label>Carregar MODELO PNG (com “MasterClass” já no sítio)</label>
-        <input id="bg" type="file" accept="image/png" />
-        <span class="muted">O canvas adapta-se ao tamanho do PNG. O texto começa no X que definires abaixo.</span>
+        <label>Cor do layout</label>
+        <div class="grid2">
+          <input id="bgColor" type="color" value="#f37759" />
+          <select id="mcPos">
+            <option value="left">“MasterClass” canto superior esquerdo</option>
+            <option value="right">“MasterClass” canto superior direito</option>
+          </select>
+        </div>
+        <span class="muted">Não precisas de PNG: a forma é desenhada automaticamente. A palavra “MasterClass” fica a branco.</span>
       </div>
 
       <div class="row">
         <label>Fotografia do especialista</label>
         <input id="photo" type="file" accept="image/*" />
+        <div class="grid2">
+          <div class="row"><label>Escala da foto</label><input id="scale" type="range" min="0.2" max="3" step="0.01" value="1" /></div>
+          <div class="row"><label>Posição X</label><input id="posX" type="range" min="-1500" max="1500" step="1" value="0" /></div>
+          <div class="row"><label>Posição Y</label><input id="posY" type="range" min="-1500" max="1500" step="1" value="0" /></div>
+        </div>
       </div>
-      <div class="grid2">
-        <div class="row"><label>Escala da foto</label><input id="scale" type="range" min="0.2" max="3" step="0.01" value="1" /></div>
-        <div class="row"><label>Posição X</label><input id="posX" type="range" min="-1500" max="1500" step="1" value="0" /></div>
-        <div class="row"><label>Posição Y</label><input id="posY" type="range" min="-1500" max="1500" step="1" value="0" /></div>
+
+      <div class="row">
+        <label>Círculo da foto (CX/CY/R)</label>
+        <div class="grid2">
+          <div class="row"><label>CX</label><input id="cx" type="range" min="0" max="2000" step="1" value="1060" /></div>
+          <div class="row"><label>CY</label><input id="cy" type="range" min="0" max="1200" step="1" value="350" /></div>
+          <div class="row"><label>R</label><input id="cr" type="range" min="10" max="1200" step="1" value="300" /></div>
+        </div>
       </div>
 
       <div class="row">
@@ -49,26 +67,23 @@
         <label>Sobrenome (linha 2)</label>
         <input id="sobrenome" type="text" value="BACK" />
       </div>
+      <div class="grid2">
+        <div class="row"><label>Título X</label><input id="titleX" type="range" min="0" max="2000" step="1" value="110" /></div>
+        <div class="row"><label>Título Y (topo da 1.ª linha)</label><input id="titleY" type="range" min="0" max="1200" step="1" value="310" /></div>
+      </div>
 
       <div class="row">
         <label>Bio (ENTER = nova linha)</label>
         <textarea id="bio">Formada em Publicidade e Propaganda, com MBA em Marketing Digital e Mestrado em Ciências da Comunicação.</textarea>
       </div>
-
-      <div class="row">
-        <label>Âncoras & círculo (afinados ao teu PNG)</label>
-        <div class="grid2">
-          <div class="row"><label>Início do Título (X)</label><input id="titleX" type="range" min="0" max="2000" step="1" value="110" /></div>
-          <div class="row"><label>Topo do Título (Y)</label><input id="titleY" type="range" min="0" max="2000" step="1" value="300" /></div>
-          <div class="row"><label>CX círculo</label><input id="cx" type="range" min="0" max="3000" step="1" value="1100" /></div>
-          <div class="row"><label>CY círculo</label><input id="cy" type="range" min="0" max="2000" step="1" value="350" /></div>
-          <div class="row"><label>R círculo</label><input id="cr" type="range" min="10" max="2000" step="1" value="280" /></div>
-        </div>
-        <span class="muted">Dica: carrega primeiro o PNG; os sliders passam a ter limites coerentes.</span>
+      <div class="grid2">
+        <div class="row"><label>Bio X</label><input id="bioX" type="range" min="0" max="2000" step="1" value="110" /></div>
+        <div class="row"><label>Bio Y</label><input id="bioY" type="range" min="0" max="2000" step="1" value="560" /></div>
       </div>
 
       <div class="row">
         <button id="export">Exportar imagem</button>
+        <span id="status" class="muted"></span>
       </div>
     </div>
   </div>
@@ -77,59 +92,79 @@
   const canvas = document.getElementById('c');
   const ctx = canvas.getContext('2d');
 
-  // UI
-  const bgInput = document.getElementById('bg');
+  // UI refs
+  const bgColor = document.getElementById('bgColor');
+  const mcPos   = document.getElementById('mcPos');
+
   const photoInput = document.getElementById('photo');
   const scaleInput = document.getElementById('scale');
-  const posXInput = document.getElementById('posX');
-  const posYInput = document.getElementById('posY');
+  const posXInput  = document.getElementById('posX');
+  const posYInput  = document.getElementById('posY');
 
-  const nomeInput = document.getElementById('nome');
-  const sobrenomeInput = document.getElementById('sobrenome');
-  const bioInput = document.getElementById('bio');
-
-  const titleXInput = document.getElementById('titleX');
-  const titleYInput = document.getElementById('titleY');
   const cxInput = document.getElementById('cx');
   const cyInput = document.getElementById('cy');
   const crInput = document.getElementById('cr');
 
-  const exportBtn = document.getElementById('export');
+  const nomeInput = document.getElementById('nome');
+  const sobrenomeInput = document.getElementById('sobrenome');
+  const titleXInput = document.getElementById('titleX');
+  const titleYInput = document.getElementById('titleY');
 
-  // Imagens
-  let bgImg = null;
-  let photo = null; let photoURL = null;
+  const bioInput = document.getElementById('bio');
+  const bioXInput = document.getElementById('bioX');
+  const bioYInput = document.getElementById('bioY');
+
+  const exportBtn = document.getElementById('export');
+  const statusEl  = document.getElementById('status');
 
   // Tipografia
   const pt = v => v * (96/72);
-  let NAME_PX_BASE = pt(208.11); // reescalado ao png
-  let BIO_PX = pt(20.8);
-  let TRACKING = pt(6); // espaçamento amplo
-
-  function rescaleToPNG(){
-    if(!bgImg) return;
-    canvas.width = bgImg.naturalWidth;
-    canvas.height = bgImg.naturalHeight;
+  function recomputeType(){
     const s = canvas.height / 700;
-    NAME_PX_BASE = pt(208.11) * s;
-    BIO_PX = pt(20.8) * s;
-    TRACKING = pt(6) * s;
-
-    // Limites dos sliders coerentes
-    [titleXInput, cxInput].forEach(el => { el.max = String(canvas.width); });
-    [titleYInput, cyInput, crInput].forEach(el => { el.max = String(canvas.height); });
-
-    // Defaults aproximados (como o teu mockup)
-    titleXInput.value = Math.round(110 * s);
-    titleYInput.value = Math.round(300 * s);
-    cxInput.value = Math.round(canvas.width * 0.78);
-    cyInput.value = Math.round(canvas.height * 0.50);
-    crInput.value = Math.round(canvas.height * 0.43);
-
-    posXInput.min = -canvas.width; posXInput.max = canvas.width;
-    posYInput.min = -canvas.height; posYInput.max = canvas.height;
+    NAME_PX = pt(208.11) * s;          // tamanho do título (duas linhas iguais)
+    TRACK   = pt(6) * s;               // tracking largo
+    BIO_PX  = pt(20.8) * s;            // base da bio
+    BIO_LH  = Math.round(BIO_PX * 1.45);
   }
+  let NAME_PX = pt(208.11), TRACK = pt(6), BIO_PX = pt(20.8), BIO_LH = Math.round(pt(20.8)*1.45);
+  recomputeType();
 
+  // Foto
+  let photo = null, photoURL = null;
+
+  // Helpers
+  function drawPill(color){
+    const W = canvas.width, H = canvas.height;
+    const R = H/2;
+    ctx.save();
+    // fundo transparente fora da forma
+    ctx.clearRect(0,0,W,H);
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.lineTo(W-R,0);
+    ctx.arc(W-R, R, R, -Math.PI/2, Math.PI/2, false);
+    ctx.lineTo(0,H);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.restore();
+  }
+  function drawMasterClass(){
+    const W = canvas.width;
+    ctx.save();
+    ctx.fillStyle = '#fff';
+    ctx.font = `800 ${Math.round(52 * (canvas.height/700))}px 'Barlow', sans-serif`;
+    ctx.textBaseline = 'top';
+    const pad = Math.round(48 * (canvas.height/700));
+    const text = "MasterClass";
+    const m = ctx.measureText(text);
+    if(mcPos.value === 'right'){
+      ctx.fillText(text, W - pad - m.width, pad);
+    }else{
+      ctx.fillText(text, pad, pad);
+    }
+    ctx.restore();
+  }
   function drawTracked(text, x, y, sizePx, trackingPx){
     ctx.font = `800 ${sizePx}px 'Barlow', sans-serif`;
     ctx.fillStyle = '#fff'; ctx.textBaseline = 'alphabetic';
@@ -144,7 +179,6 @@
     ctx.font = `800 ${sizePx}px 'Barlow', sans-serif`;
     let w=0; for(const ch of (text||'')){ w += ctx.measureText(ch).width + trackingPx; } return w;
   }
-
   function wrap(text, x, y, maxW, lh){
     ctx.font = `300 ${BIO_PX}px 'Work Sans', sans-serif`;
     ctx.fillStyle = '#fff'; ctx.textBaseline = 'top';
@@ -159,7 +193,6 @@
       ctx.fillText(line, x, y); y += lh;
     }
   }
-
   function textMaxWidth(){
     const cx = +cxInput.value, r = +crInput.value;
     const rightLimit = (cx - r) - Math.round(30 * (canvas.height/700));
@@ -169,11 +202,11 @@
   function render(){
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0,0,W,H);
+    // 1) Forma base + MasterClass
+    drawPill(bgColor.value);
+    drawMasterClass();
 
-    // 1) Layout
-    if(bgImg) ctx.drawImage(bgImg,0,0,W,H);
-
-    // 2) Foto (recorte circular) por cima
+    // 2) Foto recortada (por cima da forma)
     if(photo){
       const cx=+cxInput.value, cy=+cyInput.value, r=+crInput.value;
       const scale = +scaleInput.value, dx=+posXInput.value, dy=+posYInput.value;
@@ -185,45 +218,38 @@
       ctx.restore();
     }
 
-    // 3) Título em duas linhas (nome e sobrenome) a partir da âncora X/Y
-    const startX = +titleXInput.value;
-    const baseY  = +titleYInput.value;
+    // 3) Título (duas linhas) na âncora do título
+    let size = NAME_PX, track = TRACK;
     const nome = (nomeInput.value||'').toUpperCase();
-    const sobrenome = (sobrenomeInput.value||'').toUpperCase();
-
-    // Reduz até caber na largura útil
-    let size = NAME_PX_BASE, track = TRACKING;
     while (trackedWidth(nome, size, track) > textMaxWidth() && size > 40){
-      size -= 1; track = TRACKING * (size/NAME_PX_BASE);
+      size -= 1; track = TRACK * (size/NAME_PX);
     }
-    // Linha 1
-    drawTracked(nome, startX, baseY, size, track);
-    // Linha 2 (mesma largura alvo, mesmo tamanho)
-    drawTracked(sobrenome, startX, baseY + size*1.08, size, track);
+    const startX = +titleXInput.value, startY = +titleYInput.value;
+    drawTracked(nome, startX, startY, size, track);
+    drawTracked((sobrenomeInput.value||'').toUpperCase(), startX, startY + size*1.08, size, track);
 
-    // 4) Bio por baixo
-    const bioTop = baseY + size*1.08 + size*0.45;
-    wrap(bioInput.value, startX, bioTop, textMaxWidth(), Math.round(BIO_PX*1.45));
+    // 4) Bio com X/Y independentes
+    const maxW = (cxInput.value - crInput.value) - 30 - +bioXInput.value;
+    wrap(bioInput.value, +bioXInput.value, +bioYInput.value, Math.max(200,maxW), BIO_LH);
+
+    statusEl.textContent = `${W}×${H}`;
   }
 
-  // Eventos
-  bgInput.addEventListener('change', e=>{
-    const f=e.target.files?.[0]; if(!f) return;
-    const url=URL.createObjectURL(f); const img=new Image();
-    img.onload=()=>{ bgImg=img; rescaleToPNG(); render(); };
-    img.src=url;
-  });
+  // Load photo
   photoInput.addEventListener('change', e=>{
     const f=e.target.files?.[0]; if(!f) return;
     if(photoURL) URL.revokeObjectURL(photoURL);
     photoURL = URL.createObjectURL(f);
     const img=new Image(); img.onload=()=>{ photo=img; render(); }; img.src=photoURL;
   });
-  [scaleInput,posXInput,posYInput,nomeInput,sobrenomeInput,bioInput,
-   titleXInput,titleYInput,cxInput,cyInput,crInput].forEach(el=>el.addEventListener('input', render));
 
-  exportBtn.addEventListener('click', ()=>{
-    if(!bgImg){ alert('Carrega primeiro o MODELO PNG.'); return; }
+  // Controls re-render
+  [bgColor, mcPos, scaleInput, posXInput, posYInput, cxInput, cyInput, crInput,
+   nomeInput, sobrenomeInput, titleXInput, titleYInput, bioInput, bioXInput, bioYInput]
+   .forEach(el=>el.addEventListener('input', render));
+
+  // Export
+  document.getElementById('export').addEventListener('click', ()=>{
     const a=document.createElement('a');
     const file=`masterclass_${(nomeInput.value+'_'+sobrenomeInput.value).toLowerCase().replace(/[^a-z0-9]+/g,'_')}.png`;
     if(canvas.toBlob){
@@ -231,7 +257,7 @@
     } else { a.href=canvas.toDataURL('image/png'); a.download=file; a.click(); }
   });
 
-  // Render inicial
+  // Initial render
   render();
 </script>
 </body>
