@@ -3,15 +3,16 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>MasterClass • Editor (alinhamento dinâmico por orientação)</title>
+<title>MasterClass • Editor (tooltips + rótulos PT)</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@800&family=Work+Sans:wght@300;400&display=swap" rel="stylesheet">
 <style>
   html,body{margin:0;background:#0f0f0f;color:#eee;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Work Sans',sans-serif}
-  .app{display:grid;grid-template-columns:1fr 430px;gap:20px;max-width:min(1680px,96vw);margin:20px auto}
+  .app{display:grid;grid-template-columns:1fr 460px;gap:20px;max-width:min(1680px,96vw);margin:20px auto}
   .stage{background:#1a1a1a;border-radius:14px;padding:12px;display:flex;align-items:center;justify-content:center}
   canvas{width:100%;height:auto;background:transparent;border-radius:10px}
   .panel{background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px}
   .row{display:flex;flex-direction:column;gap:6px}
+  .lbl{position:relative;display:flex;align-items:center;gap:6px}
   label{font-size:13px;color:#bbb}
   input[type="text"], textarea{background:#0f0f0f;border:1px solid #333;border-radius:10px;color:#f2f2f2;padding:10px 12px;font-size:14px}
   textarea{min-height:80px;resize:vertical;white-space:pre-wrap}
@@ -20,6 +21,10 @@
   button{background:#ff6f4f;border:0;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .muted{color:#99a}
+  /* Tooltip */
+  .info{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#22314a;color:#9fd;cursor:pointer;font-size:12px;font-weight:800;user-select:none}
+  .info::after{content:attr(data-tip);position:absolute;left:50%;transform:translateX(-50%) translateY(8px);bottom:-4px;min-width:180px;max-width:280px;padding:8px 10px;border-radius:10px;background:#101826;border:1px solid #2a3b57;color:#cfe8ff;font-size:12px;line-height:1.25;box-shadow:0 10px 24px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .15s ease, transform .15s ease;white-space:normal;z-index:30}
+  .info:hover::after, .info.active::after{opacity:1;transform:translateX(-50%) translateY(12px)}
 </style>
 </head>
 <body>
@@ -29,12 +34,15 @@
     </div>
     <div class="panel">
       <div class="row">
-        <label>Layout</label>
+        <div class="lbl">
+          <label>Layout</label>
+          <span class="info" data-tip="Escolhe a cor da pílula e o lado onde queres a fotografia (direita/esquerda). A forma e o texto ‘MasterClass’ são gerados automaticamente.">i</span>
+        </div>
         <div class="grid2">
-          <input id="bgColor" type="color" value="#f37759" />
+          <div class="lbl" style="gap:10px"><input id="bgColor" type="color" value="#f37759" /><small class="muted">Cor</small></div>
           <select id="orientation">
-            <option value="right" selected>Fotografia à direita (pílula arredondada à direita)</option>
-            <option value="left">Fotografia à esquerda (pílula arredondada à esquerda)</option>
+            <option value="right" selected>Fotografia à direita</option>
+            <option value="left">Fotografia à esquerda</option>
           </select>
         </div>
         <div class="grid2">
@@ -44,48 +52,88 @@
           </select>
           <span class="muted"></span>
         </div>
-        <span class="muted">Sem PNG: a forma é desenhada automaticamente. “MasterClass” a branco.</span>
       </div>
 
       <div class="row">
-        <label>Fotografia do especialista</label>
+        <div class="lbl">
+          <label>Fotografia do especialista</label>
+          <span class="info" data-tip="Carrega a foto e usa os controlos para a posicionar e escalar dentro do recorte circular.">i</span>
+        </div>
         <input id="photo" type="file" accept="image/*" />
         <div class="grid2">
-          <div class="row"><label>Escala da foto</label><input id="scale" type="range" min="0.2" max="3" step="0.01" value="1" /></div>
-          <div class="row"><label>Posição X</label><input id="posX" type="range" min="-1500" max="1500" step="1" value="0" /></div>
-          <div class="row"><label>Posição Y</label><input id="posY" type="range" min="-1500" max="1500" step="1" value="0" /></div>
+          <div class="row"><div class="lbl"><label>Escala da foto</label><span class="info" data-tip="Aumenta/diminui o tamanho da foto.">i</span></div><input id="scale" type="range" min="0.2" max="3" step="0.01" value="1" /></div>
+          <div class="row"><div class="lbl"><label>Foto — horizontal (esquerda/direita)</label><span class="info" data-tip="Move a foto horizontalmente dentro do recorte circular.">i</span></div><input id="posX" type="range" min="-1500" max="1500" step="1" value="0" /></div>
+          <div class="row"><div class="lbl"><label>Foto — vertical (cima/baixo)</label><span class="info" data-tip="Move a foto verticalmente dentro do recorte circular.">i</span></div><input id="posY" type="range" min="-1500" max="1500" step="1" value="0" /></div>
         </div>
       </div>
 
       <div class="row">
-        <label>Círculo da foto (CX/CY/R)</label>
+        <div class="lbl">
+          <label>Recorte circular (CX/CY/R)</label>
+          <span class="info" data-tip="Centro X (horizontal), Centro Y (vertical) e Raio do círculo. Ajusta para encaixar a foto.">i</span>
+        </div>
         <div class="grid2">
-          <div class="row"><label>CX</label><input id="cx" type="range" min="0" max="2000" step="1" value="1060" /></div>
-          <div class="row"><label>CY</label><input id="cy" type="range" min="0" max="1200" step="1" value="350" /></div>
-          <div class="row"><label>R</label><input id="cr" type="range" min="10" max="1200" step="1" value="300" /></div>
+          <div class="row"><label>Centro horizontal</label><input id="cx" type="range" min="0" max="2000" step="1" value="1060" /></div>
+          <div class="row"><label>Centro vertical</label><input id="cy" type="range" min="0" max="1200" step="1" value="350" /></div>
+          <div class="row"><label>Raio</label><input id="cr" type="range" min="10" max="1200" step="1" value="300" /></div>
         </div>
       </div>
 
       <div class="row">
-        <label>Nome (linha 1)</label>
+        <div class="lbl">
+          <label>Nome (linha 1)</label><span class="info" data-tip="Primeira linha do título (Barlow ExtraBold — MAIÚSCULAS).">i</span>
+        </div>
         <input id="nome" type="text" value="NAIARA" />
       </div>
       <div class="row">
-        <label>Sobrenome (linha 2)</label>
+        <div class="lbl">
+          <label>Sobrenome (linha 2)</label><span class="info" data-tip="Segunda linha do título, logo abaixo do nome.">i</span>
+        </div>
         <input id="sobrenome" type="text" value="BACK" />
       </div>
+
       <div class="grid2">
-        <div class="row"><label>Título X</label><input id="titleX" type="range" min="0" max="2000" step="1" value="110" /></div>
-        <div class="row"><label>Título Y (topo da 1.ª linha)</label><input id="titleY" type="range" min="0" max="1200" step="1" value="310" /></div>
+        <div class="row">
+          <div class="lbl">
+            <label>Título — horizontal (esquerda/direita) <small class="muted" id="txLabel">• usa margem esquerda / direita conforme o lado</small></label>
+            <span class="info" data-tip="Move o título na horizontal. Quando a pílula está à ESQUERDA, este slider funciona como MARGEM DIREITA.">i</span>
+          </div>
+          <input id="titleX" type="range" min="0" max="2000" step="1" value="110" />
+        </div>
+        <div class="row">
+          <div class="lbl">
+            <label>Título — vertical (cima/baixo)</label><span class="info" data-tip="Move o título na vertical (topo da 1.ª linha).">i</span>
+          </div>
+          <input id="titleY" type="range" min="0" max="1200" step="1" value="310" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="lbl">
+          <label>Tamanho do título</label><span class="info" data-tip="Controla o tamanho do título. Não há auto‑ajuste; se invadir a área, reduz manualmente.">i</span>
+        </div>
+        <input id="titleSize" type="range" min="80" max="360" step="1" value="208" />
       </div>
 
       <div class="row">
-        <label>Bio (ENTER = nova linha)</label>
+        <div class="lbl">
+          <label>Bio</label><span class="info" data-tip="Texto em Work Sans Light. ENTER faz nova linha. Nunca invade o círculo da foto.">i</span>
+        </div>
         <textarea id="bio">Formada em Publicidade e Propaganda, com MBA em Marketing Digital e Mestrado em Ciências da Comunicação.</textarea>
       </div>
       <div class="grid2">
-        <div class="row"><label>Bio X</label><input id="bioX" type="range" min="0" max="2000" step="1" value="110" /></div>
-        <div class="row"><label>Bio Y</label><input id="bioY" type="range" min="0" max="2000" step="1" value="560" /></div>
+        <div class="row">
+          <div class="lbl">
+            <label>Bio — horizontal (esquerda/direita) <small class="muted" id="bxLabel">• usa margem esquerda / direita conforme o lado</small></label>
+            <span class="info" data-tip="Move a bio na horizontal. Quando a pílula está à ESQUERDA, este slider funciona como MARGEM DIREITA.">i</span>
+          </div>
+          <input id="bioX" type="range" min="0" max="2000" step="1" value="110" />
+        </div>
+        <div class="row">
+          <div class="lbl">
+            <label>Bio — vertical (cima/baixo)</label><span class="info" data-tip="Move a bio na vertical (linha superior).">i</span>
+          </div>
+          <input id="bioY" type="range" min="0" max="2000" step="1" value="560" />
+        </div>
       </div>
 
       <div class="row">
@@ -96,6 +144,13 @@
   </div>
 
 <script>
+  // Tooltips: toggle 'active' no clique para também funcionar em mobile
+  document.addEventListener('click', (e)=>{
+    const isInfo = e.target.classList && e.target.classList.contains('info');
+    document.querySelectorAll('.info.active').forEach(el=>{ if(el!==e.target) el.classList.remove('active'); });
+    if(isInfo){ e.target.classList.toggle('active'); }
+  });
+
   const canvas = document.getElementById('c');
   const ctx = canvas.getContext('2d');
 
@@ -116,24 +171,24 @@
   const sobrenomeInput = document.getElementById('sobrenome');
   const titleXInput = document.getElementById('titleX');
   const titleYInput = document.getElementById('titleY');
+  const titleSizeInput = document.getElementById('titleSize');
 
   const bioInput = document.getElementById('bio');
   const bioXInput = document.getElementById('bioX');
   const bioYInput = document.getElementById('bioY');
 
-  const exportBtn = document.getElementById('export');
   const statusEl  = document.getElementById('status');
 
   const pt = v => v * (96/72);
+  let NAME_PX = pt(208), TRACK = pt(6), BIO_PX = pt(20.8), BIO_LH = Math.round(pt(20.8)*1.45);
+
   function recomputeType(){
     const s = canvas.height / 700;
-    NAME_PX = pt(208.11) * s;
+    NAME_PX = pt(+titleSizeInput.value) * s;
     TRACK   = pt(6) * s;
     BIO_PX  = pt(20.8) * s;
     BIO_LH  = Math.round(BIO_PX * 1.45);
   }
-  let NAME_PX = pt(208.11), TRACK = pt(6), BIO_PX = pt(20.8), BIO_LH = Math.round(pt(20.8)*1.45);
-  recomputeType();
 
   let photo = null, photoURL = null;
 
@@ -205,7 +260,6 @@
     }
   }
   function wrapRight(text, rightEdge, y, maxW, lh){
-    // desenha alinhado à direita (x dinâmico por linha)
     ctx.font = `300 ${BIO_PX}px 'Work Sans', sans-serif`;
     ctx.fillStyle = '#fff'; ctx.textBaseline = 'top';
     const paras = String(text||'').split('\n');
@@ -219,7 +273,8 @@
       lines.push(line);
       for(const L of lines){
         const w = ctx.measureText(L).width;
-        ctx.fillText(L, rightEdge - w, y);
+        const x = Math.max(rightEdge - w, 0);
+        ctx.fillText(L, x, y);
         y += lh;
       }
     }
@@ -227,29 +282,31 @@
 
   function margin(){ return Math.round(30 * (canvas.height/700)); }
 
-  function textMaxWidth(){
+  function computeTitlePositions(size, track){
     const side = orientationSel.value;
-    const cx = +cxInput.value, r = +crInput.value;
     const m = margin();
     if(side === 'right'){
-      return Math.max(200, (cx - r) - m - +titleXInput.value);
+      return { x: +titleXInput.value, align: 'left' };
     } else {
-      // quando à esquerda, a largura útil é da âncora até ao fim da pílula (canvas.width - m)
-      return Math.max(200, (canvas.width - m) - +titleXInput.value);
+      const rightEdge = canvas.width - m - +titleXInput.value;
+      const nomeW = trackedWidth((nomeInput.value||'').toUpperCase(), size, track);
+      const sobrenomeW = trackedWidth((sobrenomeInput.value||'').toUpperCase(), size, track);
+      return { x1: rightEdge - nomeW, x2: rightEdge - sobrenomeW, align: 'right', rightEdge };
     }
   }
 
   function bioMetrics(){
     const side = orientationSel.value;
-    const cx = +cxInput.value, r = +crInput.value;
     const m = margin();
+    const cx = +cxInput.value, r = +crInput.value;
     if(side === 'right'){
-      return {maxW: Math.max(200, (cx - r) - m - +bioXInput.value), startX: +bioXInput.value, rightEdge: null};
+      const maxW = Math.max(0, (cx - r) - m - +bioXInput.value);
+      return {maxW, startX: +bioXInput.value, rightEdge: null};
     } else {
-      // alinhado à direita: direita da área = canvas.width - m
-      const rightEdge = canvas.width - m;
-      const maxW = Math.max(200, rightEdge - +bioXInput.value);
-      return {maxW, startX: null, rightEdge};
+      const leftLimit  = cx + r + m;
+      const rightEdge  = canvas.width - m - +bioXInput.value;
+      const maxW       = Math.max(0, rightEdge - leftLimit);
+      return {maxW, startX: leftLimit, rightEdge};
     }
   }
 
@@ -269,9 +326,9 @@
       cxInput.value = Math.round(R*0.7);
       cyInput.value = Math.round(H*0.5);
       crInput.value = Math.round(H*0.43);
-      titleXInput.value = Math.round(R + 60);
+      titleXInput.value = Math.round(60 * (H/700));
       titleYInput.value = Math.round(310 * (H/700));
-      bioXInput.value = Math.round(R + 60);
+      bioXInput.value = Math.round(60 * (H/700));
       bioYInput.value = Math.round(560 * (H/700));
       mcPos.value = 'right';
     }
@@ -282,11 +339,15 @@
     ctx.clearRect(0,0,W,H);
     const side = orientationSel.value;
 
-    // 1) Forma base + MasterClass
+    const s = H/700;
+    NAME_PX = (96/72) * (+titleSizeInput.value) * s;
+    TRACK   = (96/72) * 6 * s;
+    BIO_PX  = (96/72) * 20.8 * s;
+    BIO_LH  = Math.round(BIO_PX * 1.45);
+
     drawPill(bgColor.value, side);
     drawMasterClass();
 
-    // 2) Foto recortada
     if(photo){
       const cx=+cxInput.value, cy=+cyInput.value, r=+crInput.value;
       const scale = +scaleInput.value, dx=+posXInput.value, dy=+posYInput.value;
@@ -298,28 +359,17 @@
       ctx.restore();
     }
 
-    // 3) Título (duas linhas): esquerda = normal; esquerda arredondada = alinhar à direita
-    let size = NAME_PX, track = TRACK;
-    const nome = (nomeInput.value||'').toUpperCase();
-    const maxW = textMaxWidth();
-    while (trackedWidth(nome, size, track) > maxW && size > 40){
-      size -= 1; track = TRACK * (size/NAME_PX);
-    }
+    const size = NAME_PX, track = TRACK;
     const topY = +titleYInput.value;
-    if(side === 'right'){
-      const startX = +titleXInput.value;
-      drawTracked(nome, startX, topY, size, track);
-      drawTracked((sobrenomeInput.value||'').toUpperCase(), startX, topY + size*1.08, size, track);
+    const pos = computeTitlePositions(size, track);
+    if(pos.align === 'left'){
+      drawTracked((nomeInput.value||'').toUpperCase(), pos.x, topY, size, track);
+      drawTracked((sobrenomeInput.value||'').toUpperCase(), pos.x, topY + size*1.08, size, track);
     } else {
-      // alinhar à direita
-      const rightEdge = canvas.width - margin();
-      const w1 = trackedWidth(nome, size, track);
-      const w2 = trackedWidth((sobrenomeInput.value||'').toUpperCase(), size, track);
-      drawTracked(nome, rightEdge - w1, topY, size, track);
-      drawTracked((sobrenomeInput.value||'').toUpperCase(), rightEdge - w2, topY + size*1.08, size, track);
+      drawTracked((nomeInput.value||'').toUpperCase(), pos.x1, topY, size, track);
+      drawTracked((sobrenomeInput.value||'').toUpperCase(), pos.x2, topY + size*1.08, size, track);
     }
 
-    // 4) Bio com alinhamento dependente
     const bm = bioMetrics();
     if(side === 'right'){
       wrapLeft(bioInput.value, bm.startX, +bioYInput.value, bm.maxW, BIO_LH);
@@ -338,7 +388,7 @@
   });
 
   [bgColor, orientationSel, mcPos, scaleInput, posXInput, posYInput, cxInput, cyInput, crInput,
-   nomeInput, sobrenomeInput, titleXInput, titleYInput, bioInput, bioXInput, bioYInput]
+   nomeInput, sobrenomeInput, titleXInput, titleYInput, titleSizeInput, bioInput, bioXInput, bioYInput]
    .forEach(el=>el.addEventListener('input', render));
 
   orientationSel.addEventListener('change', ()=>{ applyOrientationDefaults(); render(); });
