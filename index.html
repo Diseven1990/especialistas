@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>MasterClass • Editor (tooltips + rótulos PT)</title>
+<title>MasterClass • Editor (com tutorial guiado)</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@800&family=Work+Sans:wght@300;400&display=swap" rel="stylesheet">
 <style>
   html,body{margin:0;background:#0f0f0f;color:#eee;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Work Sans',sans-serif}
@@ -25,15 +25,28 @@
   .info{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#22314a;color:#9fd;cursor:pointer;font-size:12px;font-weight:800;user-select:none}
   .info::after{content:attr(data-tip);position:absolute;left:50%;transform:translateX(-50%) translateY(8px);bottom:-4px;min-width:180px;max-width:280px;padding:8px 10px;border-radius:10px;background:#101826;border:1px solid #2a3b57;color:#cfe8ff;font-size:12px;line-height:1.25;box-shadow:0 10px 24px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .15s ease, transform .15s ease;white-space:normal;z-index:30}
   .info:hover::after, .info.active::after{opacity:1;transform:translateX(-50%) translateY(12px)}
+  /* Tutorial overlay */
+  .tour-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:saturate(0.8) blur(1px);z-index:80;display:none}
+  .tour-highlight{position:fixed;border:2px solid #7fd0ff;border-radius:12px;box-shadow:0 0 0 200vmax rgba(0,0,0,.55);z-index:90;pointer-events:none;display:none;transition:all .25s ease}
+  .tour-card{position:fixed;z-index:95;display:none;max-width:min(420px,90vw);background:#0f1624;border:1px solid #274069;border-radius:14px;color:#e9f2ff;padding:14px;box-shadow:0 14px 42px rgba(0,0,0,.5)}
+  .tour-card h3{margin:0 0 8px 0;font-size:18px}
+  .tour-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+  .btn{background:#2b4775;border:0;color:#fff;padding:8px 12px;border-radius:10px;cursor:pointer}
+  .btn.primary{background:#ff6f4f}
+  .btn.ghost{background:transparent;border:1px solid #3c557f;color:#cfe8ff}
+  .tour-start{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:70}
+  .tour-start .modal{background:#0f1624;border:1px solid #274069;border-radius:14px;padding:18px 16px;max-width:520px;width:90%;color:#e9f2ff;box-shadow:0 14px 42px rgba(0,0,0,.5)}
+  .pulse{animation:pulse 1.2s ease-in-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(127,208,255,.7)}100%{box-shadow:0 0 0 12px rgba(127,208,255,0)}}
 </style>
 </head>
 <body>
   <div class="app">
-    <div class="stage">
+    <div class="stage" id="stage">
       <canvas id="c" width="1434" height="700" aria-label="pré‑visualização"></canvas>
     </div>
-    <div class="panel">
-      <div class="row">
+    <div class="panel" id="panel">
+      <div class="row" id="grp-layout">
         <div class="lbl">
           <label>Layout</label>
           <span class="info" data-tip="Escolhe a cor da pílula e o lado onde queres a fotografia (direita/esquerda). A forma e o texto ‘MasterClass’ são gerados automaticamente.">i</span>
@@ -54,7 +67,7 @@
         </div>
       </div>
 
-      <div class="row">
+      <div class="row" id="grp-photo">
         <div class="lbl">
           <label>Fotografia do especialista</label>
           <span class="info" data-tip="Carrega a foto e usa os controlos para a posicionar e escalar dentro do recorte circular.">i</span>
@@ -67,7 +80,7 @@
         </div>
       </div>
 
-      <div class="row">
+      <div class="row" id="grp-circle">
         <div class="lbl">
           <label>Recorte circular (CX/CY/R)</label>
           <span class="info" data-tip="Centro X (horizontal), Centro Y (vertical) e Raio do círculo. Ajusta para encaixar a foto.">i</span>
@@ -79,20 +92,20 @@
         </div>
       </div>
 
-      <div class="row">
+      <div class="row" id="grp-name">
         <div class="lbl">
           <label>Nome (linha 1)</label><span class="info" data-tip="Primeira linha do título (Barlow ExtraBold — MAIÚSCULAS).">i</span>
         </div>
         <input id="nome" type="text" value="NAIARA" />
       </div>
-      <div class="row">
+      <div class="row" id="grp-surname">
         <div class="lbl">
           <label>Sobrenome (linha 2)</label><span class="info" data-tip="Segunda linha do título, logo abaixo do nome.">i</span>
         </div>
         <input id="sobrenome" type="text" value="BACK" />
       </div>
 
-      <div class="grid2">
+      <div class="grid2" id="grp-titlepos">
         <div class="row">
           <div class="lbl">
             <label>Título — horizontal (esquerda/direita) <small class="muted" id="txLabel">• usa margem esquerda / direita conforme o lado</small></label>
@@ -107,20 +120,20 @@
           <input id="titleY" type="range" min="0" max="1200" step="1" value="310" />
         </div>
       </div>
-      <div class="row">
+      <div class="row" id="grp-titlesize">
         <div class="lbl">
           <label>Tamanho do título</label><span class="info" data-tip="Controla o tamanho do título. Não há auto‑ajuste; se invadir a área, reduz manualmente.">i</span>
         </div>
         <input id="titleSize" type="range" min="80" max="360" step="1" value="208" />
       </div>
 
-      <div class="row">
+      <div class="row" id="grp-bio">
         <div class="lbl">
           <label>Bio</label><span class="info" data-tip="Texto em Work Sans Light. ENTER faz nova linha. Nunca invade o círculo da foto.">i</span>
         </div>
         <textarea id="bio">Formada em Publicidade e Propaganda, com MBA em Marketing Digital e Mestrado em Ciências da Comunicação.</textarea>
       </div>
-      <div class="grid2">
+      <div class="grid2" id="grp-biopos">
         <div class="row">
           <div class="lbl">
             <label>Bio — horizontal (esquerda/direita) <small class="muted" id="bxLabel">• usa margem esquerda / direita conforme o lado</small></label>
@@ -136,15 +149,38 @@
         </div>
       </div>
 
-      <div class="row">
+      <div class="row" id="grp-export">
         <button id="export">Exportar imagem</button>
         <span id="status" class="muted"></span>
       </div>
     </div>
   </div>
 
+  <!-- Tutorial UI -->
+  <div class="tour-start" id="tourStart">
+    <div class="modal">
+      <h3>Queres um tutorial rápido?</h3>
+      <p>Posso guiar-te passo a passo (2–3 minutos) pelos controlos essenciais até à exportação.</p>
+      <div class="tour-actions">
+        <button class="btn ghost" id="skipTour">Ignorar</button>
+        <button class="btn primary" id="startTour">Iniciar tutorial</button>
+      </div>
+    </div>
+  </div>
+  <div class="tour-backdrop" id="tourBackdrop"></div>
+  <div class="tour-highlight" id="tourHighlight"></div>
+  <div class="tour-card" id="tourCard">
+    <h3 id="tourTitle">Tutorial</h3>
+    <div id="tourText" style="font-size:14px;line-height:1.45"></div>
+    <div class="tour-actions">
+      <button class="btn ghost" id="tourExit">Sair</button>
+      <button class="btn" id="tourPrev">Anterior</button>
+      <button class="btn primary" id="tourNext">Seguinte</button>
+    </div>
+  </div>
+
 <script>
-  // Tooltips: toggle 'active' no clique para também funcionar em mobile
+  // Tooltips toggle
   document.addEventListener('click', (e)=>{
     const isInfo = e.target.classList && e.target.classList.contains('info');
     document.querySelectorAll('.info.active').forEach(el=>{ if(el!==e.target) el.classList.remove('active'); });
@@ -403,6 +439,106 @@
 
   applyOrientationDefaults();
   render();
+
+  /* ===== Tutorial ===== */
+  const tourStart = document.getElementById('tourStart');
+  const tourBackdrop = document.getElementById('tourBackdrop');
+  const tourHighlight = document.getElementById('tourHighlight');
+  const tourCard = document.getElementById('tourCard');
+  const tourTitle = document.getElementById('tourTitle');
+  const tourText = document.getElementById('tourText');
+  const btnPrev = document.getElementById('tourPrev');
+  const btnNext = document.getElementById('tourNext');
+  const btnExit = document.getElementById('tourExit');
+  document.getElementById('startTour').onclick = ()=>{ tourStart.style.display='none'; startTour(); };
+  document.getElementById('skipTour').onclick  = ()=>{ tourStart.style.display='none'; };
+
+  const steps = [
+    {el:'#grp-layout', title:'Escolher layout', text:'Seleciona a <b>cor</b> e o <b>lado</b> onde queres a fotografia. O MasterClass fica sempre a branco.', pos:'right'},
+    {el:'#grp-photo', title:'Carregar fotografia', text:'Carrega a foto do/a especialista e usa <b>escala</b> + <b>horizontal/vertical</b> para enquadrar.', pos:'right'},
+    {el:'#grp-circle', title:'Ajustar o recorte', text:'Se precisares, afina o <b>centro</b> e o <b>raio</b> do círculo para encaixar mesmo no sítio.', pos:'right'},
+    {el:'#grp-name', title:'Escrever o nome', text:'Linha 1 do título (MAIÚSCULAS).', pos:'right'},
+    {el:'#grp-surname', title:'Escrever o sobrenome', text:'Linha 2 do título (logo abaixo).', pos:'right'},
+    {el:'#grp-titlepos', title:'Posicionar o título', text:'Define as posições <b>horizontal</b> e <b>vertical</b>. O slider horizontal vira <b>margem direita</b> quando a pílula está à esquerda.', pos:'right'},
+    {el:'#grp-titlesize', title:'Tamanho do título', text:'Controla o tamanho. Não há auto‑ajuste — se invadir, reduz manualmente.', pos:'right'},
+    {el:'#grp-bio', title:'Escrever a bio', text:'A bio aceita ENTER para novas linhas e nunca invade o círculo.', pos:'right'},
+    {el:'#grp-biopos', title:'Posicionar a bio', text:'Move a bio na horizontal/vertical. Se a pílula estiver à esquerda, a horizontal funciona como margem direita.', pos:'right'},
+    {el:'#grp-export', title:'Exportar', text:'Clica em <b>Exportar imagem</b> para gerar o PNG pronto a publicar.', pos:'top'}
+  ];
+  let step = 0;
+
+  function startTour(){
+    tourBackdrop.style.display='block';
+    tourHighlight.style.display='block';
+    tourCard.style.display='block';
+    showStep(0);
+  }
+  btnExit.onclick = endTour;
+  btnPrev.onclick = ()=> showStep(step-1);
+  btnNext.onclick = ()=> showStep(step+1);
+
+  function endTour(){
+    tourBackdrop.style.display='none';
+    tourHighlight.style.display='none';
+    tourCard.style.display='none';
+    document.querySelectorAll('.pulse').forEach(e=>e.classList.remove('pulse'));
+  }
+
+  function showStep(i){
+    if(i<0){ i=0; }
+    if(i>=steps.length){
+      tourTitle.textContent='Tudo pronto!';
+      tourText.innerHTML='Agora é só experimentar e quando quiseres podes voltar a este tutorial com o atalho <b>T</b>.';
+      btnPrev.style.display='inline-block';
+      btnNext.textContent='Recomeçar';
+      btnNext.onclick = ()=> showStep(0);
+      positionCardCenter();
+      return;
+    }
+    step = i;
+    const s = steps[step];
+    const target = document.querySelector(s.el);
+    if(!target){ return endTour(); }
+    target.scrollIntoView({behavior:'smooth', block:'center'});
+    document.querySelectorAll('.pulse').forEach(e=>e.classList.remove('pulse'));
+    target.classList.add('pulse');
+
+    const r = target.getBoundingClientRect();
+    const pad = 8;
+    tourHighlight.style.display='block';
+    tourHighlight.style.left = (r.left-pad)+'px';
+    tourHighlight.style.top  = (r.top-pad)+'px';
+    tourHighlight.style.width  = (r.width+pad*2)+'px';
+    tourHighlight.style.height = (r.height+pad*2)+'px';
+
+    tourTitle.textContent = s.title;
+    tourText.innerHTML = s.text;
+    btnPrev.style.display = (step===0)?'none':'inline-block';
+    btnNext.textContent = (step===steps.length-1)?'Concluir':'Seguinte';
+    btnNext.onclick = ()=> showStep(step+1);
+
+    // posicionar card
+    const cardW = Math.min(420, window.innerWidth*0.9);
+    let x = r.right + 16;
+    let y = r.top;
+    if(s.pos==='top'){ x = r.left; y = Math.max(16, r.top - 120); }
+    if(x + cardW > window.innerWidth - 16){ x = window.innerWidth - cardW - 16; }
+    if(y + 160 > window.innerHeight - 16){ y = window.innerHeight - 176; }
+    tourCard.style.left = x+'px';
+    tourCard.style.top  = y+'px';
+  }
+
+  function positionCardCenter(){
+    const cardW = Math.min(420, window.innerWidth*0.9);
+    tourCard.style.left = (window.innerWidth/2 - cardW/2)+'px';
+    tourCard.style.top  = (window.innerHeight/2 - 100)+'px';
+  }
+
+  // atalho para relançar tutorial
+  document.addEventListener('keydown', (e)=>{
+    if(e.key.toLowerCase()==='t'){ startTour(); }
+    if(e.key==='Escape'){ endTour(); }
+  });
 </script>
 </body>
 </html>
