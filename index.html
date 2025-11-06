@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>MasterClass • Editor (com tutorial guiado)</title>
+<title>MasterClass • Editor (atalho T corrigido)</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@800&family=Work+Sans:wght@300;400&display=swap" rel="stylesheet">
 <style>
   html,body{margin:0;background:#0f0f0f;color:#eee;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Work Sans',sans-serif}
@@ -165,6 +165,7 @@
         <button class="btn ghost" id="skipTour">Ignorar</button>
         <button class="btn primary" id="startTour">Iniciar tutorial</button>
       </div>
+      <p class="muted" style="margin-top:10px">Atalho: <b>Alt/⌘/Ctrl + T</b> (para iniciar). <b>Esc</b> para sair.</p>
     </div>
   </div>
   <div class="tour-backdrop" id="tourBackdrop"></div>
@@ -217,14 +218,6 @@
 
   const pt = v => v * (96/72);
   let NAME_PX = pt(208), TRACK = pt(6), BIO_PX = pt(20.8), BIO_LH = Math.round(pt(20.8)*1.45);
-
-  function recomputeType(){
-    const s = canvas.height / 700;
-    NAME_PX = pt(+titleSizeInput.value) * s;
-    TRACK   = pt(6) * s;
-    BIO_PX  = pt(20.8) * s;
-    BIO_LH  = Math.round(BIO_PX * 1.45);
-  }
 
   let photo = null, photoURL = null;
 
@@ -319,74 +312,74 @@
   function margin(){ return Math.round(30 * (canvas.height/700)); }
 
   function computeTitlePositions(size, track){
-    const side = orientationSel.value;
+    const side = document.getElementById('orientation').value;
     const m = margin();
     if(side === 'right'){
-      return { x: +titleXInput.value, align: 'left' };
+      return { x: +document.getElementById('titleX').value, align: 'left' };
     } else {
-      const rightEdge = canvas.width - m - +titleXInput.value;
-      const nomeW = trackedWidth((nomeInput.value||'').toUpperCase(), size, track);
-      const sobrenomeW = trackedWidth((sobrenomeInput.value||'').toUpperCase(), size, track);
+      const rightEdge = canvas.width - m - +document.getElementById('titleX').value;
+      const nomeW = trackedWidth((document.getElementById('nome').value||'').toUpperCase(), size, track);
+      const sobrenomeW = trackedWidth((document.getElementById('sobrenome').value||'').toUpperCase(), size, track);
       return { x1: rightEdge - nomeW, x2: rightEdge - sobrenomeW, align: 'right', rightEdge };
     }
   }
 
   function bioMetrics(){
-    const side = orientationSel.value;
+    const side = document.getElementById('orientation').value;
     const m = margin();
-    const cx = +cxInput.value, r = +crInput.value;
+    const cx = +document.getElementById('cx').value, r = +document.getElementById('cr').value;
     if(side === 'right'){
-      const maxW = Math.max(0, (cx - r) - m - +bioXInput.value);
-      return {maxW, startX: +bioXInput.value, rightEdge: null};
+      const maxW = Math.max(0, (cx - r) - m - +document.getElementById('bioX').value);
+      return {maxW, startX: +document.getElementById('bioX').value, rightEdge: null};
     } else {
       const leftLimit  = cx + r + m;
-      const rightEdge  = canvas.width - m - +bioXInput.value;
+      const rightEdge  = canvas.width - m - +document.getElementById('bioX').value;
       const maxW       = Math.max(0, rightEdge - leftLimit);
       return {maxW, startX: leftLimit, rightEdge};
     }
   }
 
   function applyOrientationDefaults(){
-    const side = orientationSel.value;
+    const side = document.getElementById('orientation').value;
     const W = canvas.width, H = canvas.height, R = H/2;
     if(side === 'right'){
-      cxInput.value = Math.round(W - R*0.7);
-      cyInput.value = Math.round(H*0.5);
-      crInput.value = Math.round(H*0.43);
-      titleXInput.value = Math.round(110 * (H/700));
-      titleYInput.value = Math.round(310 * (H/700));
-      bioXInput.value = titleXInput.value;
-      bioYInput.value = Math.round(560 * (H/700));
-      mcPos.value = 'left';
+      document.getElementById('cx').value = Math.round(W - R*0.7);
+      document.getElementById('cy').value = Math.round(H*0.5);
+      document.getElementById('cr').value = Math.round(H*0.43);
+      document.getElementById('titleX').value = Math.round(110 * (H/700));
+      document.getElementById('titleY').value = Math.round(310 * (H/700));
+      document.getElementById('bioX').value = document.getElementById('titleX').value;
+      document.getElementById('bioY').value = Math.round(560 * (H/700));
+      document.getElementById('mcPos').value = 'left';
     } else {
-      cxInput.value = Math.round(R*0.7);
-      cyInput.value = Math.round(H*0.5);
-      crInput.value = Math.round(H*0.43);
-      titleXInput.value = Math.round(60 * (H/700));
-      titleYInput.value = Math.round(310 * (H/700));
-      bioXInput.value = Math.round(60 * (H/700));
-      bioYInput.value = Math.round(560 * (H/700));
-      mcPos.value = 'right';
+      document.getElementById('cx').value = Math.round(R*0.7);
+      document.getElementById('cy').value = Math.round(H*0.5);
+      document.getElementById('cr').value = Math.round(H*0.43);
+      document.getElementById('titleX').value = Math.round(60 * (H/700));
+      document.getElementById('titleY').value = Math.round(310 * (H/700));
+      document.getElementById('bioX').value = Math.round(60 * (H/700));
+      document.getElementById('bioY').value = Math.round(560 * (H/700));
+      document.getElementById('mcPos').value = 'right';
     }
   }
 
   function render(){
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0,0,W,H);
-    const side = orientationSel.value;
+    const side = document.getElementById('orientation').value;
 
     const s = H/700;
-    NAME_PX = (96/72) * (+titleSizeInput.value) * s;
-    TRACK   = (96/72) * 6 * s;
-    BIO_PX  = (96/72) * 20.8 * s;
-    BIO_LH  = Math.round(BIO_PX * 1.45);
+    const NAME_PX = (96/72) * (+document.getElementById('titleSize').value) * s;
+    const TRACK   = (96/72) * 6 * s;
+    const BIO_PX  = (96/72) * 20.8 * s;
+    const BIO_LH  = Math.round(BIO_PX * 1.45);
 
-    drawPill(bgColor.value, side);
+    drawPill(document.getElementById('bgColor').value, side);
     drawMasterClass();
 
     if(photo){
-      const cx=+cxInput.value, cy=+cyInput.value, r=+crInput.value;
-      const scale = +scaleInput.value, dx=+posXInput.value, dy=+posYInput.value;
+      const cx=+document.getElementById('cx').value, cy=+document.getElementById('cy').value, r=+document.getElementById('cr').value;
+      const scale = +document.getElementById('scale').value, dx=+document.getElementById('posX').value, dy=+document.getElementById('posY').value;
       ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,r-1,0,Math.PI*2); ctx.clip();
       const pw=photo.naturalWidth, ph=photo.naturalHeight;
       const base = Math.max((2*r)/pw,(2*r)/ph) * scale;
@@ -395,43 +388,44 @@
       ctx.restore();
     }
 
-    const size = NAME_PX, track = TRACK;
-    const topY = +titleYInput.value;
-    const pos = computeTitlePositions(size, track);
+    const topY = +document.getElementById('titleY').value;
+    const pos = computeTitlePositions(NAME_PX, TRACK);
     if(pos.align === 'left'){
-      drawTracked((nomeInput.value||'').toUpperCase(), pos.x, topY, size, track);
-      drawTracked((sobrenomeInput.value||'').toUpperCase(), pos.x, topY + size*1.08, size, track);
+      drawTracked((document.getElementById('nome').value||'').toUpperCase(), pos.x, topY, NAME_PX, TRACK);
+      drawTracked((document.getElementById('sobrenome').value||'').toUpperCase(), pos.x, topY + NAME_PX*1.08, NAME_PX, TRACK);
     } else {
-      drawTracked((nomeInput.value||'').toUpperCase(), pos.x1, topY, size, track);
-      drawTracked((sobrenomeInput.value||'').toUpperCase(), pos.x2, topY + size*1.08, size, track);
+      drawTracked((document.getElementById('nome').value||'').toUpperCase(), pos.x1, topY, NAME_PX, TRACK);
+      drawTracked((document.getElementById('sobrenome').value||'').toUpperCase(), pos.x2, topY + NAME_PX*1.08, NAME_PX, TRACK);
     }
 
     const bm = bioMetrics();
     if(side === 'right'){
-      wrapLeft(bioInput.value, bm.startX, +bioYInput.value, bm.maxW, BIO_LH);
+      wrapLeft(document.getElementById('bio').value, bm.startX, +document.getElementById('bioY').value, bm.maxW, BIO_LH);
     } else {
-      wrapRight(bioInput.value, bm.rightEdge, +bioYInput.value, bm.maxW, BIO_LH);
+      wrapRight(document.getElementById('bio').value, bm.rightEdge, +document.getElementById('bioY').value, bm.maxW, BIO_LH);
     }
 
-    statusEl.textContent = `${W}×${H} • orientação: ${side}`;
+    document.getElementById('status').textContent = `${W}×${H}`;
   }
 
-  photoInput.addEventListener('change', e=>{
+  // Photo loader
+  document.getElementById('photo').addEventListener('change', e=>{
     const f=e.target.files?.[0]; if(!f) return;
     if(photoURL) URL.revokeObjectURL(photoURL);
     photoURL = URL.createObjectURL(f);
     const img=new Image(); img.onload=()=>{ photo=img; render(); }; img.src=photoURL;
   });
 
-  [bgColor, orientationSel, mcPos, scaleInput, posXInput, posYInput, cxInput, cyInput, crInput,
-   nomeInput, sobrenomeInput, titleXInput, titleYInput, titleSizeInput, bioInput, bioXInput, bioYInput]
-   .forEach(el=>el.addEventListener('input', render));
+  // Controls
+  ['bgColor','orientation','mcPos','scale','posX','posY','cx','cy','cr','nome','sobrenome','titleX','titleY','titleSize','bio','bioX','bioY']
+   .forEach(id=>document.getElementById(id).addEventListener('input', render));
 
-  orientationSel.addEventListener('change', ()=>{ applyOrientationDefaults(); render(); });
+  document.getElementById('orientation').addEventListener('change', ()=>{ applyOrientationDefaults(); render(); });
 
+  // Export
   document.getElementById('export').addEventListener('click', ()=>{
     const a=document.createElement('a');
-    const file=`masterclass_${(nomeInput.value+'_'+sobrenomeInput.value).toLowerCase().replace(/[^a-z0-9]+/g,'_')}.png`;
+    const file=`masterclass_${(document.getElementById('nome').value+'_'+document.getElementById('sobrenome').value).toLowerCase().replace(/[^a-z0-9]+/g,'_')}.png`;
     if(canvas.toBlob){
       canvas.toBlob(b=>{ const url=URL.createObjectURL(b); a.href=url; a.download=file; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000); }, 'image/png');
     } else { a.href=canvas.toDataURL('image/png'); a.download=file; a.click(); }
@@ -488,7 +482,7 @@
     if(i<0){ i=0; }
     if(i>=steps.length){
       tourTitle.textContent='Tudo pronto!';
-      tourText.innerHTML='Agora é só experimentar e quando quiseres podes voltar a este tutorial com o atalho <b>T</b>.';
+      tourText.innerHTML='Agora é só experimentar. Podes voltar ao tutorial com <b>Alt/⌘/Ctrl + T</b>.';
       btnPrev.style.display='inline-block';
       btnNext.textContent='Recomeçar';
       btnNext.onclick = ()=> showStep(0);
@@ -517,7 +511,6 @@
     btnNext.textContent = (step===steps.length-1)?'Concluir':'Seguinte';
     btnNext.onclick = ()=> showStep(step+1);
 
-    // posicionar card
     const cardW = Math.min(420, window.innerWidth*0.9);
     let x = r.right + 16;
     let y = r.top;
@@ -534,10 +527,16 @@
     tourCard.style.top  = (window.innerHeight/2 - 100)+'px';
   }
 
-  // atalho para relançar tutorial
+  // atalhos: só quando NÃO estás a escrever e com modificador
   document.addEventListener('keydown', (e)=>{
-    if(e.key.toLowerCase()==='t'){ startTour(); }
-    if(e.key==='Escape'){ endTour(); }
+    const ae = document.activeElement;
+    const tag = ae && ae.tagName ? ae.tagName.toUpperCase() : '';
+    const typing = (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable));
+    if(typing) return;
+    const keyT = e.key && e.key.toLowerCase() === 't';
+    const withMod = e.altKey || e.ctrlKey || e.metaKey;
+    if(keyT && withMod){ startTour(); }
+    if(e.key === 'Escape'){ endTour(); }
   });
 </script>
 </body>
